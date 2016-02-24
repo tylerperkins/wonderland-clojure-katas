@@ -2,20 +2,36 @@
   (:require [clojure.test :refer :all]
             [doublets.solver :refer :all]))
 
+
 (deftest solver-test
-  (testing "with word links found"
-    (is (= ["head" "heal" "teal" "tell" "tall" "tail"]
-           (doublets "head" "tail")))
 
-    (is (= ["door" "boor" "book" "look" "lock"]
-           (doublets "door" "lock")))
+  (testing "Words are linked iff they differ by one character."
+    (are [w1        w2          result]     (= result (linked w1 w2))
+          ""        ""          false
+          "head"    "he"        false
+          "he"      "head"      false
+          "head"    "head"      false
+          "head"    "heal"      true
+          "book"    "look"      true
+          "breed"   "bread"     true
+          "breed"   "bleed"     true
+      )
+    )
 
-    (is (= ["bank" "bonk" "book" "look" "loon" "loan"]
-           (doublets "bank" "loan")))
+  (testing "Succeeds when word links found."
+    (are [w1        w2          result]     (= result (doublets w1 w2))
+          "head"    "tail"      ["head" "heal" "teal" "tell" "tall" "tail"]
+          "door"    "lock"      ["door" "boor" "book" "look" "lock"]
+          "bank"    "loan"      ["bank" "bonk" "book" "look" "loon" "loan"]
+          "wheat"   "bread"     ["wheat" "cheat" "cheap" "cheep" "creep" "creed" "breed" "bread"]
+      )
+    )
 
-    (is (= ["wheat" "cheat" "cheap" "cheep" "creep" "creed" "breed" "bread"]
-           (doublets "wheat" "bread"))))
+  (testing "Succeeds when no word links found."
+    (are [w1        w2]       (empty? (doublets w1 w2))
+          "ye"      "freezer"
+          "ye"      "yo"
+      )
+    )
 
-  (testing "with no word links found"
-    (is (= []
-           (doublets "ye" "freezer")))))
+  )
